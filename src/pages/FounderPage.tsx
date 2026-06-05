@@ -5,9 +5,9 @@ import { Sparkles, HelpCircle, Star, Quote } from 'lucide-react';
 
 export const FounderPage: React.FC = () => {
   const navigate = useNavigate();
-  const { blogPosts } = useStore();
+  const { blogPosts, founderProfile } = useStore();
 
-  const founderPosts = blogPosts.filter(p => p.author_name.toLowerCase().includes('thomas'));
+  const founderPosts = blogPosts.filter(p => p.author_name.toLowerCase().includes(founderProfile.name.toLowerCase().split(' ')[0]));
 
   return (
     <div id="founder-page" className="bg-brand-beige min-h-screen py-12 px-4 md:px-8">
@@ -19,15 +19,15 @@ export const FounderPage: React.FC = () => {
           {/* Column 1: Dramatic portrait alignment (5 cols) */}
           <div className="lg:col-span-5 bg-brand-beige border border-brand-light-gray relative aspect-[3/4]">
             <img 
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800" 
-              alt="Fumilayo Thomas, Founder of Fitins & Cute Collections" 
+              src={founderProfile.profile_image_url} 
+              alt={`${founderProfile.name}, Founder of Fitins & Cute Collections`} 
               className="w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-[1000ms]"
               referrerPolicy="no-referrer"
             />
             {/* Elegant overlay badge */}
             <div className="absolute bottom-4 left-4 right-4 bg-brand-charcoal text-white p-3 text-center border border-brand-gold/30">
               <span className="font-serif text-[0.65rem] tracking-[0.25em] uppercase text-brand-gold font-bold block mb-0.5">
-                FUMILAYO THOMAS
+                {founderProfile.name.toUpperCase()}
               </span>
               <span className="font-sans text-[0.55rem] tracking-widest text-white/70 uppercase">
                 FOUNDER & CHIEF STYLE DIRECTOR
@@ -41,27 +41,21 @@ export const FounderPage: React.FC = () => {
               THE VISIONARY BEHIND THE CURATIONS
             </span>
             <h1 className="font-serif text-4xl md:text-5xl font-light text-brand-charcoal mb-6 leading-tight">
-              About Fumilayo Thomas
+              About {founderProfile.name}
             </h1>
 
             {/* Pull Quote */}
             <div className="border-l-2 border-brand-gold pl-4 py-1.5 mb-6 text-brand-charcoal">
               <Quote className="h-5 w-5 text-brand-gold mb-2" />
               <p className="font-serif text-base italic leading-relaxed font-light text-[#555555]">
-                "Couture is not merely fabric stitched together; it is an intimate conversation of personal heritage, spatial geometry, and unwavering self-appreciation."
+                "{founderProfile.quote}"
               </p>
             </div>
 
             <div className="flex flex-col gap-4 font-serif text-sm text-brand-gray leading-relaxed font-light">
-              <p>
-                Fumilayo Thomas is an internationally recognized fashion director, visual curator, and the creative engine behind **Fitins & Cute Collections**. With years of experience traversing the sartorial hubs of Lagos, London, and New York, she established the label on a simple yet revolutionary premise: that true luxury belongs to those who carry their culture and identity raw, without compromise.
-              </p>
-              <p>
-                Fumilayo's philosophy resides squarely at the intersection of modern luxury structures and classic African narratives. Understanding that human hair integrations are vital crowns of identity, she personally sources raw individual Vietnamese and Temple-Indian donor hair weaves to build our hallmark HD Swiss lace frontals.
-              </p>
-              <p>
-                This same integrity permeates our womenswear and menswear collections. She partners with multi-generational tailoring houses to sculpt traditional cashmeres, agbadas, and flowing silk silhouettes that bridge physical comfort with dramatic editorial weights.
-              </p>
+              {founderProfile.bio.split('\n\n').map((para, idx) => (
+                <p key={idx}>{para}</p>
+              ))}
             </div>
 
           </div>
@@ -114,7 +108,7 @@ export const FounderPage: React.FC = () => {
         {founderPosts.length > 0 && (
           <div className="border-t border-brand-light-gray mt-16 pt-12 text-left">
             <h3 className="font-serif text-xl font-bold tracking-wide text-brand-charcoal mb-6">
-              Essays Penned By Fumilayo Thomas
+              Essays Penned By {founderProfile.name}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {founderPosts.map(post => (

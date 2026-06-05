@@ -12,10 +12,25 @@ export const AdminDashboard: React.FC = () => {
   const { 
     currentUser, activeRole, products, orders, blogPosts, comments, reviews, subscribers,
     addProduct, updateProduct, deleteProduct, updateOrderStatus, deleteOrder,
-    approveComment, deleteComment, approveReview, deleteReview, addBlogPost, deleteBlogPost
+    approveComment, deleteComment, approveReview, deleteReview, addBlogPost, deleteBlogPost,
+    siteSettings, founderProfile, customers, updateCustomerStatus, updateSiteSettings, updateFounderProfile
   } = useStore();
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'blogs' | 'comments' | 'reviews' | 'subscribers'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'blogs' | 'comments' | 'reviews' | 'subscribers' | 'customers' | 'settings'>('dashboard');
+
+  // Site Settings states
+  const [settingsForm, setSettingsForm] = useState(siteSettings);
+  const [founderForm, setFounderForm] = useState(founderProfile);
+  const [settingsSuccess, setSettingsSuccess] = useState('');
+  const [founderSuccess, setFounderSuccess] = useState('');
+
+  React.useEffect(() => {
+    setSettingsForm(siteSettings);
+  }, [siteSettings]);
+
+  React.useEffect(() => {
+    setFounderForm(founderProfile);
+  }, [founderProfile]);
 
   // Product Creator state
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -161,7 +176,7 @@ export const AdminDashboard: React.FC = () => {
             </span>
           </div>
 
-          <nav className="flex flex-col gap-1.5 text-left">
+          <nav className="flex flex-col gap-1.5 text-left text-xs">
             {[
               { id: 'dashboard', label: 'Dashboard Hub', icon: DollarSign },
               { id: 'products', label: 'Couture Products', icon: ShoppingBag },
@@ -169,7 +184,9 @@ export const AdminDashboard: React.FC = () => {
               { id: 'blogs', label: 'Journal Posts', icon: BookOpen },
               { id: 'comments', label: 'Moderation Comments', icon: MessageSquare },
               { id: 'reviews', label: 'Customer Reviews', icon: MessageSquare },
-              { id: 'subscribers', label: 'Newsletter list', icon: Users }
+              { id: 'subscribers', label: 'Newsletter List', icon: Users },
+              { id: 'customers', label: 'Customers', icon: Users },
+              { id: 'settings', label: 'Site Settings', icon: Settings }
             ].map(tab => {
               const Icon = tab.icon;
               return (
@@ -741,6 +758,489 @@ export const AdminDashboard: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* ================ TABCARD 8: CUSTOMERS MANAGER ================ */}
+          {activeTab === 'customers' && (
+            <div id="tab-customers" className="text-left flex flex-col gap-6">
+              <h3 className="font-serif text-2xl font-light text-brand-charcoal border-b border-brand-light-gray pb-3">
+                Registered Clientele & Customer Accounts ({customers.length} total)
+              </h3>
+
+              <div className="overflow-x-auto no-scrollbar border border-brand-light-gray">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-brand-beige border-b border-brand-light-gray font-sans uppercase font-bold text-[0.6rem] text-brand-gray">
+                      <th className="p-3">Customer Profile</th>
+                      <th className="p-3">Email Address</th>
+                      <th className="p-3">Date Registered</th>
+                      <th className="p-3">Account Status</th>
+                      <th className="p-3 text-right">Moderator Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customers.map(c => (
+                      <tr key={c.id} className="border-b border-brand-light-gray bg-white hover:bg-brand-beige/25">
+                        <td className="p-3 flex items-center gap-2 font-serif font-bold text-brand-charcoal text-xs">
+                          <div className="h-6 w-6 rounded-full bg-brand-charcoal text-brand-beige text-[0.55rem] font-bold font-serif flex items-center justify-center uppercase shrink-0">
+                            {c.name ? c.name.trim().charAt(0).toUpperCase() : 'C'}
+                          </div>
+                          <span>{c.name || 'Anonymous User'}</span>
+                          <span className="text-[0.55rem] tracking-widest font-sans uppercase text-brand-gold-dark px-1.5 py-0.5 bg-brand-gold/15 rounded ml-2">
+                            {c.role}
+                          </span>
+                        </td>
+                        <td className="p-3 text-brand-gray font-mono text-[0.65rem]">{c.email}</td>
+                        <td className="p-3 text-brand-gray font-mono text-[0.65rem]">{new Date(c.created_at).toLocaleString()}</td>
+                        <td className="p-3">
+                          <span className={`px-2.5 py-1 text-[0.6rem] uppercase tracking-widest font-bold rounded-full ${
+                            c.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          }`}>
+                            {c.status || 'active'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right font-sans">
+                          {c.id !== currentUser.id && c.email.toLowerCase() !== 'fumilayo@fitinscute.com' ? (
+                            c.status === 'suspended' ? (
+                              <button 
+                                onClick={async () => {
+                                  await updateCustomerStatus(c.id, 'active');
+                                }}
+                                className="clickable text-[0.55rem] font-sans font-bold uppercase tracking-widest border border-emerald-600 hover:bg-emerald-50 text-emerald-700 py-1 px-3"
+                              >
+                                Reactivate
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={async () => {
+                                  await updateCustomerStatus(c.id, 'suspended');
+                                }}
+                                className="clickable text-[0.55rem] font-sans font-bold uppercase tracking-widest border border-rose-600 hover:bg-rose-50 text-rose-700 py-1 px-3"
+                              >
+                                Suspend Account
+                              </button>
+                            )
+                          ) : (
+                            <span className="text-brand-gray font-sans italic select-none text-[0.65rem]">Active Administrator</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ================ TABCARD 9: CENTRAL SITE SETTINGS ================ */}
+          {activeTab === 'settings' && (
+            <div id="tab-settings" className="text-left flex flex-col gap-10">
+              <div className="border-b border-brand-light-gray pb-3 flex justify-between items-baseline">
+                <h3 className="font-serif text-2xl font-light text-brand-charcoal">
+                  Central Site Settings & Brand Configuration
+                </h3>
+                {settingsSuccess && (
+                  <span className="font-serif text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1">
+                    {settingsSuccess}
+                  </span>
+                )}
+              </div>
+
+              {/* Form 1: Brand Configuration */}
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                await updateSiteSettings(settingsForm);
+                setSettingsSuccess('Central settings persisted dynamically!');
+                setTimeout(() => setSettingsSuccess(''), 4000);
+              }} className="flex flex-col gap-8">
+                
+                {/* Visual Grid Segment: Brand Identity */}
+                <div className="p-6 border border-brand-light-gray bg-brand-beige/25 flex flex-col gap-4">
+                  <h4 className="font-serif text-base font-bold text-brand-charcoal uppercase tracking-wider mb-2 border-b border-brand-light-gray/65 pb-1">
+                    1. Brand Identity & Presence
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Logo URL Address</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.logo_url}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, logo_url: e.target.value })}
+                        placeholder="/assets/logo.png"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Favicon Icon URL</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.favicon_url}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, favicon_url: e.target.value })}
+                        placeholder="/favicon.ico"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Brand / Corporate Name</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.brand_name}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, brand_name: e.target.value })}
+                        placeholder="Fitins & Cute Collections"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact configurations */}
+                <div className="p-6 border border-brand-light-gray bg-brand-beige/25 flex flex-col gap-4">
+                  <h4 className="font-serif text-base font-bold text-brand-charcoal uppercase tracking-wider mb-2 border-b border-brand-light-gray/65 pb-1">
+                    2. Contact Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Support / Business Email</label>
+                      <input 
+                        type="email" 
+                        value={settingsForm.business_email}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, business_email: e.target.value })}
+                        placeholder="fumilayo@fitinscute.com"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">WhatsApp Concierge Number</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.whatsapp_number}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp_number: e.target.value })}
+                        placeholder="+2348030000000"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Atelier Address Location</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.contact_address || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, contact_address: e.target.value })}
+                        placeholder="Lekki Phase 1, Lagos, Nigeria"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financial and store configurations */}
+                <div className="p-6 border border-brand-light-gray bg-brand-beige/25 flex flex-col gap-4">
+                  <h4 className="font-serif text-base font-bold text-brand-charcoal uppercase tracking-wider mb-2 border-b border-brand-light-gray/65 pb-1">
+                    3. Store Configuration & Rules
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Base Currency Symbol</label>
+                      <select 
+                        value={settingsForm.currency}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, currency: e.target.value })}
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white h-10"
+                      >
+                        <option value="USD">USD ($)</option>
+                        <option value="NGN">NGN (₦)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="EUR">EUR (€)</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-1.5 col-span-2">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Shipping Policy settings description</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.shipping_settings}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, shipping_settings: e.target.value })}
+                        placeholder="Free Shipping worldwide for selected couture items"
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5 mt-2">
+                    <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Government Tax Policy details</label>
+                    <input 
+                      type="text" 
+                      value={settingsForm.tax_settings}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, tax_settings: e.target.value })}
+                      placeholder="7.5% Government VAT Applied"
+                      className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Gateway config credentials */}
+                <div className="p-6 border border-brand-light-gray bg-brand-beige/25 flex flex-col gap-4">
+                  <h4 className="font-serif text-base font-bold text-brand-charcoal uppercase tracking-wider mb-2 border-b border-brand-light-gray/65 pb-1">
+                    4. Gateway API Key Configurations
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 border border-brand-light-gray bg-white rounded flex flex-col gap-3">
+                      <h5 className="font-serif text-xs font-bold text-brand-charcoal uppercase text-brand-gold-dark font-sans">Flutterwave API Keys</h5>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Public live Key</label>
+                        <input 
+                          type="text" 
+                          value={settingsForm.flutterwave_pub}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, flutterwave_pub: e.target.value })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Secret Key</label>
+                        <input 
+                          type="password" 
+                          value={settingsForm.flutterwave_sec}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, flutterwave_sec: e.target.value })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 border border-brand-light-gray bg-white rounded flex flex-col gap-3">
+                      <h5 className="font-serif text-xs font-bold text-brand-charcoal uppercase text-brand-gold-dark font-sans">Paystack API Keys</h5>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Public live Key</label>
+                        <input 
+                          type="text" 
+                          value={settingsForm.paystack_pub}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, paystack_pub: e.target.value })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Secret Key</label>
+                        <input 
+                          type="password" 
+                          value={settingsForm.paystack_sec}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, paystack_sec: e.target.value })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border border-brand-light-gray bg-white rounded flex flex-col gap-3 mt-4">
+                    <h5 className="font-serif text-xs font-bold text-brand-charcoal uppercase text-brand-gold-dark font-sans">Stripe Credentials</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Publishable Key</label>
+                        <input 
+                          type="text" 
+                          value={settingsForm.stripe_pub}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, stripe_pub: e.target.value })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Secret Key</label>
+                        <input 
+                          type="password" 
+                          value={settingsForm.stripe_sec}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, stripe_sec: e.target.value })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SEO Config */}
+                <div className="p-6 border border-brand-light-gray bg-brand-beige/25 flex flex-col gap-4">
+                  <h4 className="font-serif text-base font-bold text-brand-charcoal uppercase tracking-wider mb-2 border-b border-brand-light-gray/65 pb-1">
+                    5. SEO Meta Configuration
+                  </h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Homepage Meta Title</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.homepage_title}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, homepage_title: e.target.value })}
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Homepage Meta Description</label>
+                      <textarea 
+                        rows={2}
+                        value={settingsForm.homepage_description}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, homepage_description: e.target.value })}
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white animate-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">OG Social Sharing Image URL</label>
+                      <input 
+                        type="text" 
+                        value={settingsForm.social_sharing_image}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, social_sharing_image: e.target.value })}
+                        className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-4">
+                  <button 
+                    type="submit"
+                    className="clickable bg-brand-charcoal hover:bg-brand-gray text-white text-[0.7rem] font-sans font-bold uppercase tracking-widest py-3.5 px-8"
+                  >
+                    Save Site Configs
+                  </button>
+                </div>
+              </form>
+
+              {/* Form 2: Founder configuration */}
+              <div className="border-t border-brand-light-gray pt-10 mt-6 text-left flex flex-col gap-6">
+                <div className="flex justify-between items-baseline border-b border-brand-light-gray pb-3">
+                  <h3 className="font-serif text-2xl font-light text-brand-charcoal">
+                    Founder Profile Management
+                  </h3>
+                  {founderSuccess && (
+                     <span className="font-serif text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1">
+                      {founderSuccess}
+                     </span>
+                  )}
+                </div>
+
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  await updateFounderProfile(founderForm);
+                  setFounderSuccess('Founder profile metadata saved instantly!');
+                  setTimeout(() => setFounderSuccess(''), 4000);
+                }} className="flex flex-col gap-6">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Founder Full Name</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.name}
+                          onChange={(e) => setFounderForm({ ...founderForm, name: e.target.value })}
+                          className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                          required
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Aesthetic Pull Quote</label>
+                        <textarea 
+                          rows={2}
+                          value={founderForm.quote}
+                          onChange={(e) => setFounderForm({ ...founderForm, quote: e.target.value })}
+                          className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold italic bg-white"
+                          required
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Founder Portrait Photo URL</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.profile_image_url}
+                          onChange={(e) => setFounderForm({ ...founderForm, profile_image_url: e.target.value })}
+                          className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                          required
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Brand Signature Lettering</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.signature}
+                          onChange={(e) => setFounderForm({ ...founderForm, signature: e.target.value })}
+                          className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold bg-white"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-1.5 h-full">
+                        <label className="font-sans text-[0.62rem] font-semibold text-brand-gray uppercase">Autobiography Profile Bio</label>
+                        <textarea 
+                          rows={12}
+                          value={founderForm.bio}
+                          onChange={(e) => setFounderForm({ ...founderForm, bio: e.target.value })}
+                          className="font-serif text-xs border border-brand-light-gray p-2.5 focus:border-brand-gold flex-1 min-h-[200px] bg-white"
+                          placeholder="Split items into paragraphs by separating with two newlines."
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Social links handles */}
+                  <div className="p-4 bg-brand-beige/25 border border-brand-light-gray mt-2">
+                    <h5 className="font-serif text-xs font-bold text-brand-charcoal uppercase tracking-wider mb-3">Social Media Integrations</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Instagram URL</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.social_links?.instagram || ''}
+                          onChange={(e) => setFounderForm({ 
+                            ...founderForm, 
+                            social_links: { ...(founderForm.social_links || { instagram: '', twitter: '', facebook: '', linkedin: '' }), instagram: e.target.value } 
+                          })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Twitter URL</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.social_links?.twitter || ''}
+                          onChange={(e) => setFounderForm({ 
+                            ...founderForm, 
+                            social_links: { ...(founderForm.social_links || { instagram: '', twitter: '', facebook: '', linkedin: '' }), twitter: e.target.value } 
+                          })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">Facebook URL</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.social_links?.facebook || ''}
+                          onChange={(e) => setFounderForm({ 
+                            ...founderForm, 
+                            social_links: { ...(founderForm.social_links || { instagram: '', twitter: '', facebook: '', linkedin: '' }), facebook: e.target.value } 
+                          })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-sans text-[0.55rem] text-brand-gray uppercase font-semibold">LinkedIn URL</label>
+                        <input 
+                          type="text" 
+                          value={founderForm.social_links?.linkedin || ''}
+                          onChange={(e) => setFounderForm({ 
+                            ...founderForm, 
+                            social_links: { ...(founderForm.social_links || { instagram: '', twitter: '', facebook: '', linkedin: '' }), linkedin: e.target.value } 
+                          })}
+                          className="font-mono text-[0.65rem] border border-brand-light-gray p-2 focus:border-brand-gold bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end mt-4">
+                    <button 
+                      type="submit"
+                      className="clickable bg-brand-charcoal hover:bg-brand-gray text-white text-[0.7rem] font-sans font-bold uppercase tracking-widest py-3.5 px-8"
+                    >
+                      Update Founder Profile
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

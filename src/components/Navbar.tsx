@@ -12,7 +12,8 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const { 
     cart, wishlist, currentUser, activeRole, simulateRoleChange, logout,
-    updateCartQuantity, removeFromCart, products, toggleWishlist, addToCart
+    updateCartQuantity, removeFromCart, products, toggleWishlist, addToCart,
+    founderProfile
   } = useStore();
 
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -211,10 +212,25 @@ export const Navbar: React.FC = () => {
             <button 
               id="btn-account-trigger"
               onClick={() => setIsAccountOpen(true)}
-              className="clickable flex items-center gap-1 p-1.5 text-brand-charcoal hover:text-brand-gold transition-colors border border-transparent rounded-full"
+              className="clickable flex items-center gap-1.5 p-1 text-brand-charcoal hover:text-brand-gold transition-colors border border-transparent rounded-full"
               aria-label="My Account"
             >
-              <User className="h-5 w-5" />
+              {currentUser ? (
+                activeRole === 'admin' || activeRole === 'editor' ? (
+                  <img 
+                    src={founderProfile.profile_image_url} 
+                    className="h-6 w-6 rounded-full object-cover border border-brand-gold shrink-0 bg-white" 
+                    alt="Founder Icon"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="h-6 w-6 rounded-full bg-brand-charcoal text-brand-beige flex items-center justify-center font-serif text-[0.65rem] font-bold uppercase shrink-0 border border-brand-light-gray">
+                    {currentUser.name ? currentUser.name.trim().charAt(0).toUpperCase() : 'C'}
+                  </div>
+                )
+              ) : (
+                <User className="h-5 w-5" />
+              )}
               {currentUser && (
                 <span className="hidden md:inline text-[0.65rem] tracking-widest uppercase font-medium text-brand-gold-dark px-1 bg-brand-gold/10">
                   {activeRole}
@@ -593,19 +609,45 @@ export const Navbar: React.FC = () => {
               {currentUser ? (
                 <div className="flex flex-col gap-6">
                   {/* Account Header */}
-                  <div className="flex items-center gap-4 bg-white p-4 border border-brand-light-gray">
-                    <img 
-                      src={currentUser.avatar_url} 
-                      alt={currentUser.name} 
-                      className="h-14 w-14 rounded-full object-cover border border-brand-gold shrink-0"
-                      referrerPolicy="no-referrer"
-                    />
+                  <div className="flex items-center gap-4 bg-white p-4 border border-brand-light-gray justify-start w-full text-left">
+                    {activeRole === 'admin' || activeRole === 'editor' ? (
+                      <img 
+                        src={founderProfile.profile_image_url} 
+                        alt="Founder avatar" 
+                        className="h-14 w-14 rounded-full object-cover border border-brand-gold shrink-0 bg-white"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="h-14 w-14 rounded-full bg-brand-charcoal text-brand-beige flex items-center justify-center font-serif text-lg font-bold uppercase shrink-0 border border-brand-gold">
+                        {currentUser.name ? currentUser.name.trim().charAt(0).toUpperCase() : 'C'}
+                      </div>
+                    )}
                     <div>
-                      <h4 className="font-serif text-base font-semibold text-brand-charcoal leading-none mb-1">{currentUser.name}</h4>
-                      <p className="font-sans text-xs text-brand-gray">{currentUser.email}</p>
-                      <span className="inline-block mt-2 text-[0.6rem] uppercase tracking-widest bg-brand-gold text-white px-2 py-0.5 rounded-full font-bold">
-                        {currentUser.role} Role
-                      </span>
+                      {activeRole === 'admin' ? (
+                        <>
+                          <h4 className="font-serif text-base font-semibold text-brand-charcoal leading-none mb-1">{founderProfile.name}</h4>
+                          <p className="font-sans text-xs text-brand-gray">{currentUser.email}</p>
+                          <span className="inline-block mt-2 text-[0.55rem] uppercase tracking-widest bg-brand-gold text-white px-2.5 py-1 rounded-full font-bold">
+                            ADMIN BADGE
+                          </span>
+                        </>
+                      ) : activeRole === 'editor' ? (
+                        <>
+                          <h4 className="font-serif text-base font-semibold text-brand-charcoal leading-none mb-1">Elite Style Editor</h4>
+                          <p className="font-sans text-xs text-brand-gray">{currentUser.email}</p>
+                          <span className="inline-block mt-2 text-[0.55rem] uppercase tracking-widest bg-brand-charcoal text-white px-2.5 py-1 rounded-full font-bold">
+                            EDITOR BADGE
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <h4 className="font-serif text-base font-semibold text-brand-charcoal leading-none mb-1">{currentUser.name}</h4>
+                          <p className="font-sans text-xs text-brand-gray">{currentUser.email}</p>
+                          <span className="inline-block mt-2 text-[0.55rem] uppercase tracking-widest bg-brand-beige text-brand-charcoal px-2 py-1 rounded-full font-bold border border-brand-light-gray">
+                            Customer Access
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
 

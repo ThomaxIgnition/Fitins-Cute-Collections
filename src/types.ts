@@ -6,7 +6,46 @@ export interface UserProfile {
   name: string;
   role: UserRole;
   avatar_url?: string;
+  status: 'active' | 'suspended';
   created_at: string;
+}
+
+export interface SiteSettings {
+  id: string;
+  logo_url: string;
+  favicon_url: string;
+  brand_name: string;
+  business_email: string;
+  whatsapp_number: string;
+  contact_address: string;
+  currency: string;
+  shipping_settings: string;
+  tax_settings: string;
+  flutterwave_pub: string;
+  flutterwave_sec: string;
+  paystack_pub: string;
+  paystack_sec: string;
+  stripe_pub: string;
+  stripe_sec: string;
+  homepage_title: string;
+  homepage_description: string;
+  social_sharing_image: string;
+}
+
+export interface FounderProfile {
+  id: string;
+  name: string;
+  bio: string;
+  signature: string;
+  quote: string;
+  profile_image_url: string;
+  social_links: {
+    instagram: string;
+    twitter: string;
+    facebook: string;
+    linkedin: string;
+  };
+  updated_at: string;
 }
 
 export type MainCategory = 'hair' | 'women' | 'men';

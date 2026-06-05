@@ -162,6 +162,7 @@ const DEFAULT_AUTH_USERS: UserProfile[] = [
     name: 'Fumilayo Thomas',
     role: 'admin',
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    status: 'active',
     created_at: '2026-05-01T00:00:00Z'
   },
   {
@@ -170,6 +171,7 @@ const DEFAULT_AUTH_USERS: UserProfile[] = [
     name: 'Tunde Jacobs',
     role: 'editor',
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
+    status: 'active',
     created_at: '2026-05-02T00:00:00Z'
   }
 ];

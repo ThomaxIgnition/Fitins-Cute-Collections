@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const BlogPage: React.FC = () => {
   const navigate = useNavigate();
-  const { blogPosts, comments, addComment, products, addToCart } = useStore();
+  const { blogPosts, comments, addComment, products, addToCart, founderProfile } = useStore();
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -118,7 +118,7 @@ export const BlogPage: React.FC = () => {
               With style and appreciation,
             </p>
             <h4 className="font-serif text-xl font-bold text-brand-charcoal mt-4 leading-none">
-              Fumilayo Thomas
+              {founderProfile.signature}
             </h4>
             <p className="font-sans text-[0.7rem] uppercase tracking-widest text-brand-gold-dark mt-2 font-semibold">
               Founder, Style Curator & Lifestyle Contributor
